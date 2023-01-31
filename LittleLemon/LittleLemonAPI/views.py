@@ -91,6 +91,7 @@ class DeliveryCrewGroupViewSet(ListModelMixin,
 
 class CartViewSet(ListModelMixin,
                   CreateModelMixin,
+                  DestroyModelMixin,
                   GenericViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
@@ -98,20 +99,7 @@ class CartViewSet(ListModelMixin,
     filter_backends = []
     ordering_fields = []
 
-    def get_queryset(self):
-        queryset = self.queryset.filter(user=self.request.user)
-        return queryset
-
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        data['user'] = request.user.id
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=HTTP_201_CREATED, headers=headers)
-
-    def clear(self, request, *args, **kwargs):
+    def destroy(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         queryset.delete()
         return Response({'message': 'Cart has been cleared.'}, status=HTTP_204_NO_CONTENT)
@@ -127,7 +115,7 @@ class OrderViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        if user.is_staff or user.groups.filter(name='Manager').exists():
+        if user.is_superuser or user.groups.filter(name='Manager').exists():
             return self.queryset.all()
 
         if user.groups.filter(name='Delivery Crew').exists():

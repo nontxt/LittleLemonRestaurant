@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import MenuItem, Category, Cart, Order, OrderItem
 
 
@@ -9,7 +10,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
-    category_title = serializers.CharField(source='category.title', read_only=True)
+    category_title = serializers.StringRelatedField(read_only=True, source='category')
 
     class Meta:
         model = MenuItem
@@ -27,7 +28,8 @@ class GroupSerializer(serializers.Serializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(source='menuitem.title', read_only=True)
+    title = serializers.StringRelatedField(source='menuitem', read_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), default=serializers.CurrentUserDefault())
     quantity = serializers.IntegerField()
     unit_price = serializers.SerializerMethodField(read_only=True)
     price = serializers.SerializerMethodField(read_only=True)
@@ -35,11 +37,6 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['user', 'menuitem', 'title', 'unit_price', 'quantity', 'price', ]
-        extra_kwargs = {
-            'user': {
-                'write_only': True
-            },
-        }
 
     def get_unit_price(self, product: Cart):
         return product.menuitem.price
@@ -49,7 +46,7 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class OrderItemsSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(source='menuitem.title')
+    title = serializers.StringRelatedField(source='menuitem', read_only=True)
 
     class Meta:
         model = OrderItem

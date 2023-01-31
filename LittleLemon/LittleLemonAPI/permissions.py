@@ -6,7 +6,7 @@ class OrderPermissions(BasePermission):
     def has_permission(self, request, view):
 
         groups = request.user.groups.all()
-        if groups.filter(name='Manager').exists() or request.user.is_staff:
+        if groups.filter(name='Manager').exists() or request.user.is_superuser:
             user = 'manager'
         elif groups.filter(name='Delivery Crew').exists():
             user = 'delivery'
@@ -30,7 +30,6 @@ class IsManager(BasePermission):
     """
 
     def has_permission(self, request, view):
-        # return bool(request.user and (request.user.groups.filter(name='Manager').exists() or request.user.is_staff))
         return bool(request.user and (request.user.groups.filter(name='Manager').exists() or request.user.is_superuser))
 
 

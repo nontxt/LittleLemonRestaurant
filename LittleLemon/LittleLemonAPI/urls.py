@@ -16,7 +16,7 @@ ROUTERS_ARGS = [
 routers = [SimpleRouter(trailing_slash=False) for _ in ROUTERS_ARGS]
 
 urlpatterns = [
-    path('cart/menu-items', CartViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'clear'})),
+    path('cart/menu-items', CartViewSet.as_view({'get': 'list', 'post': 'create', 'delete': 'destroy'})),
 ]
 
 for router, args in zip(routers, ROUTERS_ARGS):
